@@ -8,10 +8,11 @@
                 <Transition name="accordion">
                     <div class="accordion-body" v-if="group.isOpen">
                         <div class="product-card" v-for="item in group.items" :key="item.id">
+                            {{  item  }}
                             <p class="product-name">{{ item.name }} ({{ item.quantity }}шт.) </p>
                             <div class="product-price-btn">
                                 <p class="product-price" :class="priceDynamic" >
-                                ₽ {{ item.price }}
+                                ₽ {{ item.price }} {{ priceDynamic }}
                                 </p>
                                 <button class="add-to-cart" :disabled="item.quantity <= 0" @click="addToCart(item)">
                                         Купить
@@ -27,6 +28,7 @@
             <div class="empty-cart" v-if="cartItems.length === 0" >Корзина пуста</div>
             <div v-else>
                 <div class="cart-item" v-for="cartItem in cartItems" :key="cartItem.id">
+                    {{ cartItem }}
                     <div class="cart-info">
                         <p class="cart-category">{{ cartItem.category }}</p>
                         <p><strong> {{ cartItem.name }}</strong></p>
@@ -47,103 +49,29 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex';
+import { mapActions, mapGetters, mapMutations } from 'vuex';
 
 export default {
     data() {
         return {
-        goods: [],
-        names: {},
-        exchangeRate: 75, // Курс доллара к рублю
-        priceDynamic: {},
-        groupedGoods: [],
-        categoryState: JSON.parse(localStorage.getItem('categoryState')) || {},
+            
         };
     },
     methods: {
-        ...mapActions(['addToCart', 'updateCartItem', 'removeFromCart']),
-        async fetchData(){
-            try {
-                const goodsResponse = await fetch('/public/data/data.json');
-                const namesResponse = await fetch('/public/data/names.json');
-                this.goods = (await goodsResponse.json()).Value.Goods;
-                this.names = await namesResponse.json();
-                this.groupGoodsByCategory();
-                console.log(this.goods, 'goods');
-                console.log(this.names, 'names');
-            } catch (error) {
-                console.error('Ошибка загрузки данных:', error);
-            }
-        },
-        updateRateCurrency(){
-            const updatedRate = Math.floor(Math.random() * (80 - 20 + 1)) + 20;
-            // 82
-            if(updatedRate > this.exchangeRate){
-                this.priceDynamic = 'price-up';
-            } else if(updatedRate < this.exchangeRate){
-                this.priceDynamic = 'price-down'
-            } else {
-                this.priceDynamic = ''
-            }
-            this.exchangeRate = updatedRate;
-        },
-        groupGoodsByCategory() {
-            const grouped = this.goods.reduce((acc, item) => {
-                const categoryName = this.names[item.G]?.G;
-                const productName = this.names[item.G]?.B[item.T]?.N;
-                const mappedItem = {
-                    id: item.T,
-                    name: productName,
-                    category: categoryName,
-                    price: (item.C * this.exchangeRate).toFixed(2),
-                    quantity: item.P,
-                };
-
-                if (!acc[categoryName]) {
-                    console.log(this.groupedGoods,'!!!!!!!')
-                    acc[categoryName] = {
-                        category: categoryName,
-                        isOpen: this.categoryState[categoryName] || false, 
-                        items: [],
-                    };
-                }
-
-                acc[categoryName].items.push(mappedItem);
-                return acc;
-            }, {});
-            console.log(this.groupedGoods, 'grrrrrr')
-            this.groupedGoods = Object.values(grouped);
-        },
-        toggleCategory(category) {
-            this.categoryState[category] = !this.categoryState[category];
-            localStorage.setItem('categoryState', JSON.stringify(this.categoryState));
-            this.groupGoodsByCategory();
-        },
+        ...mapActions(['addToCart', 'updateCartItem', 'removeFromCart', 'fetchData', 'updateRateCurrency']),
+        ...mapMutations(['toggleCategory']), 
+       
     },
-    async mounted() {
-        await this.fetchData();
-        setInterval(() => {
+        mounted() {
+            this.fetchData();
+            setInterval(() => {
             this.updateRateCurrency();
-            console.log(this.exchangeRate);
             this.fetchData();
         }, 15000);
     },
     computed: {
-        ...mapGetters(['cartItems']),
-        mappedGoods() {
-            return this.goods.map((item) => {
-                const categoryName = this.names[item.G]?.G;
-                const productName = this.names[item.G]?.B[item.T]?.N;
-                const mappedItem = {
-                id: item.T,
-                name: productName,
-                category: categoryName,
-                price: (item.C * this.exchangeRate).toFixed(2),
-                quantity: item.P,
-                };
-                return mappedItem;
-            });
-        },
+        ...mapGetters(['cartItems', 'groupedGoods', 'priceDynamic']),
+
     },
   
 };
@@ -265,6 +193,10 @@ export default {
     gap: 20px;
     border: 2px solid black;
     border-radius: 8px;
+}
+
+.cart-category {
+    height: 25px;
 }
 
 .cart-info {
