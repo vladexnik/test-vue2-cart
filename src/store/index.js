@@ -5,9 +5,9 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
     state: {
-        cart: [], // Stores cart items
+        cart: [],
         goods: [],
-        names: {},
+        names: [],
         exchangeRate: 75,
         priceDynamic: '',
         categoryState: JSON.parse(localStorage.getItem('categoryState')) || {},
@@ -21,26 +21,29 @@ export default new Vuex.Store({
         },
         SET_EXCHANGE_RATE(state, { updatedRate, priceDynamic }) {
             state.exchangeRate = updatedRate;
-            state.priceDynamic = priceDynamic;
+            Vue.set(state, 'priceDynamic', priceDynamic);
         },
         toggleCategory(state, category) {
             state.categoryState[category] = !state.categoryState[category];
             localStorage.setItem('categoryState', JSON.stringify(state.categoryState));
         },
-
         ADD_TO_CART(state, product) {
             const cartItem = state.cart.find(item => item.id === product.id);
+            const price = (product.C * state.exchangeRate).toFixed(2);
             if (cartItem) {
                 cartItem.quantity += 1;
+                cartItem.price = price;
             } else {
-                state.cart.push({ ...product, quantity: 1 });
+                state.cart.push({ ...product, quantity: 1, price });
             }
         },
         UPDATE_CART_ITEM(state, { id, quantity }) {
             const cartItem = state.cart.find(item => item.id === id);
             if (cartItem) {
                 cartItem.quantity = quantity;
+                cartItem.price = (cartItem.C * state.exchangeRate).toFixed(2);
             }
+
         },
         REMOVE_FROM_CART(state, id) {
             state.cart = state.cart.filter(item => item.id !== id);
@@ -65,8 +68,9 @@ export default new Vuex.Store({
                 priceDynamic = 'price-up';
             } else if (updatedRate < state.exchangeRate) {
                 priceDynamic = 'price-down';
+            } else {
+                 priceDynamic = ''
             }
-
            commit('SET_EXCHANGE_RATE', { updatedRate, priceDynamic });
         },
 
@@ -79,7 +83,7 @@ export default new Vuex.Store({
                 commit('SET_GOODS', goods);
                 commit('SET_NAMES', names);
             } catch (error) {
-                console.error('Ошибка загрузки данных:', error);
+                alert('Ошибка загрузки данных:', error);
             }
         },
     },
@@ -89,12 +93,16 @@ export default new Vuex.Store({
             const grouped = state.goods.reduce((acc, item) => {
                 const categoryName = state.names[item.G]?.G;
                 const productName = state.names[item.G]?.B[item.T]?.N;
+                const cartItem = state.cart.find(cart => cart.id === item.T);
+
+                console.log(state.cart);
                 const mappedItem = {
                     id: item.T,
                     name: productName,
                     category: categoryName,
-                    price: (item.C * state.exchangeRate).toFixed(2),
-                    quantity: item.P,
+                    price: (item.C * state.exchangeRate).toFixed(1),
+                    priceInUSD: item.C,
+                    quantity: cartItem ? item.P - cartItem.quantity : item.P,
                 };
 
                 if (!acc[categoryName]) {

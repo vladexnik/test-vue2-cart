@@ -11,8 +11,5 @@ export default {
   components: {
     ShopItems
   }
-  // props: {
-  //   msg: String
-  // }
 }
 </script>

@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [vue2()],
   resolve: {
     alias: {
-      '@': '/src', // Ensure alias is configured
+      '@': '/src'
     },
   },
 })
