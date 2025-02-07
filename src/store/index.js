@@ -12,7 +12,7 @@ export default new Vuex.Store({
         priceDynamic: '',
         categoryState: JSON.parse(localStorage.getItem('categoryState')) || {},
     },
-    mutations: {
+    mutations: { 
         SET_GOODS(state, goods) {
             state.goods = goods;
         },
@@ -88,14 +88,13 @@ export default new Vuex.Store({
         },
     },
     getters: {
-        cartItems: state => state.cart,
-        groupedGoods: (state) => {
+        cartItems: state => state.cart, // store state for cart
+        groupedGoods: (state) => { // mapping of fetched data
             const grouped = state.goods.reduce((acc, item) => {
                 const categoryName = state.names[item.G]?.G;
                 const productName = state.names[item.G]?.B[item.T]?.N;
                 const cartItem = state.cart.find(cart => cart.id === item.T);
 
-                console.log(state.cart);
                 const mappedItem = {
                     id: item.T,
                     name: productName,
@@ -119,5 +118,6 @@ export default new Vuex.Store({
 
             return Object.values(grouped);
         },
+        getExchangeRate: state => state.exchangeRate 
     },
 });
