@@ -30,7 +30,7 @@
 
 <script>
 import { mapActions, mapMutations, mapGetters } from 'vuex';
-import { getPriceDynamic } from '../../utils/priceUtils';
+import { getPriceDynamic } from '../utils/priceUtils';
 
 export default {
     computed: {

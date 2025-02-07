@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import { getPriceDynamic, getRandomCurrencyRate } from '../../utils/priceUtils';
+import { getPriceDynamic, getRandomCurrencyRate } from '../utils/priceUtils';
 
 Vue.use(Vuex); 
 
