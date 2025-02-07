@@ -1,16 +1,19 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+import { getPriceDynamic, getRandomCurrencyRate } from '../../utils/priceUtils';
 
 Vue.use(Vuex); 
 
 export default new Vuex.Store({
     state: {
-        cart: [],
+        // Store main info in global store
+        cart: [], 
         goods: [],
         names: [],
         exchangeRate: 75,
         priceDynamic: '',
-        categoryState: JSON.parse(localStorage.getItem('categoryState')) || {},
+        categoryState: JSON.parse(localStorage.getItem('categoryState')) || {}, 
+        // Stores category states (open/closed) in localStorage for page reload 
     },
     mutations: { 
         SET_GOODS(state, goods) {
@@ -61,17 +64,10 @@ export default new Vuex.Store({
         },
 
         updateRateCurrency({ commit, state }) {
-            const updatedRate = Math.floor(Math.random() * (80 - 20 + 1)) + 20;
-            let priceDynamic = '';
-
-            if (updatedRate > state.exchangeRate) {
-                priceDynamic = 'price-up';
-            } else if (updatedRate < state.exchangeRate) {
-                priceDynamic = 'price-down';
-            } else {
-                 priceDynamic = ''
-            }
-           commit('SET_EXCHANGE_RATE', { updatedRate, priceDynamic });
+            const updatedRate = getRandomCurrencyRate();
+            const priceDynamic = getPriceDynamic(updatedRate, state.exchangeRate);
+            
+            commit('SET_EXCHANGE_RATE', { updatedRate, priceDynamic });
         },
 
         async fetchData({ commit }) {

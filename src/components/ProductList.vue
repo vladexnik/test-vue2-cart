@@ -30,6 +30,7 @@
 
 <script>
 import { mapActions, mapMutations, mapGetters } from 'vuex';
+import { getPriceDynamic } from '../../utils/priceUtils';
 
 export default {
     computed: {
@@ -41,18 +42,16 @@ export default {
             get() {
                 return this.getExchangeRate;
             },
-            set(value) {
+            set(value) { // change exchangeRate in input via setter
                 if (value > 80) {
                     alert("The maximum allowed exchange rate is 80.");
                     value = 80;
                 } else if (value < 0) {
-                    alert("The minimum allowed exchange rate is 20.");
+                    alert("The minimum allowed exchange rate is higher.");
                     value = 20;
                 }
-                const priceDynamic =
-                    value > this.getExchangeRate ? 'price-up' :
-                    value < this.getExchangeRate ? 'price-down' :
-                    '';
+                const priceDynamic = getPriceDynamic(value, this.getExchangeRate);
+                    
                 this.SET_EXCHANGE_RATE({
                     updatedRate: value,
                     priceDynamic: priceDynamic
@@ -61,7 +60,7 @@ export default {
         }
     },
     methods: {
-        ...mapActions(['addToCart', 'removeFromCart', 'updateRateCurrency', 'fetchData']),
+        ...mapActions(['addToCart', 'updateRateCurrency', 'fetchData']),
         ...mapMutations(['toggleCategory', "SET_EXCHANGE_RATE"])
     },
     mounted() {
